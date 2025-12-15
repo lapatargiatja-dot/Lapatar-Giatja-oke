@@ -9,22 +9,41 @@ interface FinancialChartsProps {
   transactions: Transaction[];
 }
 
-const COLORS = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
+// Expanded color palette for more categories
+const COLORS = [
+  '#4f46e5', // Indigo
+  '#10b981', // Emerald
+  '#f59e0b', // Amber
+  '#ef4444', // Red
+  '#8b5cf6', // Violet
+  '#ec4899', // Pink
+  '#06b6d4', // Cyan
+  '#84cc16', // Lime
+  '#14b8a6', // Teal
+  '#6366f1', // Indigo-lighter
+  '#d946ef', // Fuchsia
+  '#f43f5e'  // Rose
+];
 
 export const FinancialCharts: React.FC<FinancialChartsProps> = ({ transactions }) => {
   
-  // Prepare Data for Pie Chart (Expenses by Category)
-  const expenseData = useMemo(() => {
-    const expenses = transactions.filter(t => t.type === TransactionType.EXPENSE);
+  // Helper to process data for pie charts
+  const getCategoryData = (type: TransactionType) => {
+    const filtered = transactions.filter(t => t.type === type);
     const categoryMap = new Map<string, number>();
 
-    expenses.forEach(t => {
+    filtered.forEach(t => {
       const current = categoryMap.get(t.category) || 0;
       categoryMap.set(t.category, current + t.amount);
     });
 
-    return Array.from(categoryMap.entries()).map(([name, value]) => ({ name, value }));
-  }, [transactions]);
+    return Array.from(categoryMap.entries())
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value); // Sort by value descending
+  };
+
+  const incomeData = useMemo(() => getCategoryData(TransactionType.INCOME), [transactions]);
+  const expenseData = useMemo(() => getCategoryData(TransactionType.EXPENSE), [transactions]);
 
   // Prepare Data for Bar Chart (Last 7 Days)
   const last7DaysData = useMemo(() => {
@@ -53,44 +72,81 @@ export const FinancialCharts: React.FC<FinancialChartsProps> = ({ transactions }
 
   if (transactions.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500">
+      <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500 mb-8">
         Belum ada data untuk ditampilkan di grafik.
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      {/* Expense Breakdown */}
-      <div className="bg-white p-6 rounded-xl shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Pengeluaran per Kategori</h3>
-        <div className="h-64 w-full">
-          {expenseData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={expenseData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {expenseData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: number) => `Rp ${value.toLocaleString('id-ID')}`} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-full flex items-center justify-center text-gray-400">
-              Belum ada pengeluaran
-            </div>
-          )}
+    <div className="space-y-6 mb-8">
+      {/* Pie Charts Container */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Income Breakdown */}
+        <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Pemasukan per Unit Usaha</h3>
+          <div className="h-64 w-full flex-1">
+            {incomeData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={incomeData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="#10b981"
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {incomeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => `Rp ${value.toLocaleString('id-ID')}`} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                <p>Belum ada data pemasukan</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Expense Breakdown */}
+        <div className="bg-white p-6 rounded-xl shadow-sm flex flex-col">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Pengeluaran per Unit Usaha</h3>
+          <div className="h-64 w-full flex-1">
+            {expenseData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={expenseData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="#ef4444"
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {expenseData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => `Rp ${value.toLocaleString('id-ID')}`} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-gray-400">
+                <p>Belum ada data pengeluaran</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

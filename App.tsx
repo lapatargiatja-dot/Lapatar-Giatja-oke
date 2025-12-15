@@ -5,7 +5,7 @@ import { TransactionForm } from './components/TransactionForm';
 import { TransactionList } from './components/TransactionList';
 import { FinancialCharts } from './components/FinancialCharts';
 import { AIAnalysis } from './components/AIAnalysis';
-import { LayoutDashboard, List, PieChart, Plus, Menu, X, Sparkles } from 'lucide-react';
+import { LayoutDashboard, List, PieChart, Plus, Menu, X, Sparkles, Download } from 'lucide-react';
 
 const STORAGE_KEY = 'fintrack_data_v1';
 
@@ -67,6 +67,45 @@ export default function App() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (transactions.length === 0) {
+      alert("Belum ada data transaksi untuk diekspor.");
+      return;
+    }
+
+    // Define Headers
+    const headers = ["Tanggal", "Tipe", "Kategori", "Jumlah", "Deskripsi"];
+    
+    // Create CSV Rows
+    const csvRows = [headers.join(",")];
+    
+    // Sort chronologically for export
+    const sortedForExport = [...transactions].sort((a, b) => 
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+
+    for (const t of sortedForExport) {
+      const row = [
+        t.date.split('T')[0], // YYYY-MM-DD
+        t.type === TransactionType.INCOME ? 'Pemasukan' : 'Pengeluaran',
+        `"${t.category}"`, // Quote category to handle potential commas
+        t.amount,
+        `"${(t.description || '').replace(/"/g, '""')}"` // Escape double quotes in description
+      ];
+      csvRows.push(row.join(","));
+    }
+    
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `laporan_keuangan_giatja_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Navigation Item Component
   const NavItem = ({ view, icon: Icon, label }: { view: ViewState, icon: any, label: string }) => (
     <button
@@ -91,8 +130,8 @@ export default function App() {
       {/* Mobile Header */}
       <div className="md:hidden bg-white shadow-sm p-4 flex justify-between items-center sticky top-0 z-30">
         <h1 className="text-xl font-bold text-primary flex items-center gap-2">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">F</div>
-          FinTrack
+          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">G</div>
+          Laporan Keuangan Giatja
         </h1>
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-600">
           {isMobileMenuOpen ? <X /> : <Menu />}
@@ -106,8 +145,8 @@ export default function App() {
       `}>
         <div className="p-6">
           <h1 className="text-2xl font-bold text-primary flex items-center gap-2 mb-8 hidden md:flex">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">F</div>
-            FinTrack AI
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">G</div>
+            Laporan Keuangan Giatja
           </h1>
           
           <nav className="space-y-2">
@@ -123,8 +162,8 @@ export default function App() {
               U
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-800">User Pribadi</p>
-              <p className="text-xs text-gray-500">Versi Demo</p>
+              <p className="text-sm font-semibold text-gray-800">User Giatja</p>
+              <p className="text-xs text-gray-500">Versi 1.0</p>
             </div>
           </div>
         </div>
@@ -140,7 +179,7 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 p-4 md:p-8 overflow-y-auto">
-        <header className="flex justify-between items-center mb-8">
+        <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">
               {currentView === 'DASHBOARD' && 'Dashboard Keuangan'}
@@ -152,13 +191,26 @@ export default function App() {
             </p>
           </div>
           
-          <button
-            onClick={() => setIsFormOpen(true)}
-            className="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center gap-2 transition-colors"
-          >
-            <Plus size={20} />
-            <span className="hidden sm:inline">Tambah Data</span>
-          </button>
+          <div className="flex gap-3 w-full sm:w-auto">
+            {currentView === 'TRANSACTIONS' && (
+              <button
+                onClick={handleExportCSV}
+                className="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors flex-1 sm:flex-none"
+              >
+                <Download size={20} />
+                <span className="hidden sm:inline">Ekspor Data</span>
+                <span className="sm:hidden">Ekspor</span>
+              </button>
+            )}
+            <button
+              onClick={() => setIsFormOpen(true)}
+              className="bg-primary hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow-md flex items-center justify-center gap-2 transition-colors flex-1 sm:flex-none"
+            >
+              <Plus size={20} />
+              <span className="hidden sm:inline">Tambah Data</span>
+              <span className="sm:hidden">Tambah</span>
+            </button>
+          </div>
         </header>
 
         {/* Views */}

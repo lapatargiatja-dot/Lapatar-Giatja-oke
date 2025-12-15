@@ -21,6 +21,32 @@ export interface FinancialSummary {
 export type ViewState = 'DASHBOARD' | 'TRANSACTIONS' | 'ANALYSIS';
 
 export const CATEGORIES = {
-  INCOME: ['Gaji', 'Bonus', 'Investasi', 'Hadiah', 'Lainnya'],
-  EXPENSE: ['Makanan', 'Transportasi', 'Tempat Tinggal', 'Hiburan', 'Kesehatan', 'Belanja', 'Tagihan', 'Lainnya']
+  INCOME: [
+    'Menjahit',
+    'Doorsmeer',
+    'Pangkas',
+    'Greenhouse',
+    'Kantor',
+    'Las',
+    'Bakery',
+    'Laundry',
+    'Tenun',
+    'Pertanian LT',
+    'Meubel',
+    'Miniatur'
+  ],
+  EXPENSE: [
+    'Menjahit',
+    'Doorsmeer',
+    'Pangkas',
+    'Greenhouse',
+    'Kantor',
+    'Las',
+    'Bakery',
+    'Laundry',
+    'Tenun',
+    'Pertanian LT',
+    'Meubel',
+    'Miniatur'
+  ]
 };
